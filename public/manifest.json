@@ -1,0 +1,25 @@
+{
+  "name": "Doobs - Speech to Text",
+  "short_name": "Doobs",
+  "description": "A speech-to-text PWA named after mathematician Joseph Doob",
+  "theme_color": "#282a36",
+  "background_color": "#282a36",
+  "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
+  "start_url": "/",
+  "icons": [
+    {
+      "src": "/doobs-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/doobs-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["productivity", "utilities"]
+}

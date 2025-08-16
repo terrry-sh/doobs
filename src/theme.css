@@ -1,0 +1,156 @@
+:root {
+  /* Dracula Theme Colors */
+  --dracula-background: #282a36;
+  --dracula-current-line: #44475a;
+  --dracula-foreground: #f8f8f2;
+  --dracula-comment: #6272a4;
+  --dracula-cyan: #8be9fd;
+  --dracula-green: #50fa7b;
+  --dracula-orange: #ffb86c;
+  --dracula-pink: #ff79c6;
+  --dracula-purple: #bd93f9;
+  --dracula-red: #ff5555;
+  --dracula-yellow: #f1fa8c;
+  
+  /* Ionic Variables Override */
+  --ion-background-color: var(--dracula-background);
+  --ion-background-color-rgb: 40, 42, 54;
+  
+  --ion-text-color: var(--dracula-foreground);
+  --ion-text-color-rgb: 248, 248, 242;
+  
+  --ion-color-primary: var(--dracula-purple);
+  --ion-color-primary-rgb: 189, 147, 249;
+  --ion-color-primary-contrast: var(--dracula-background);
+  --ion-color-primary-contrast-rgb: 40, 42, 54;
+  --ion-color-primary-shade: #a580dc;
+  --ion-color-primary-tint: #c49efa;
+  
+  --ion-color-secondary: var(--dracula-pink);
+  --ion-color-secondary-rgb: 255, 121, 198;
+  --ion-color-secondary-contrast: var(--dracula-background);
+  --ion-color-secondary-contrast-rgb: 40, 42, 54;
+  --ion-color-secondary-shade: #e06aae;
+  --ion-color-secondary-tint: #ff8ad1;
+  
+  --ion-color-tertiary: var(--dracula-cyan);
+  --ion-color-tertiary-rgb: 139, 233, 253;
+  --ion-color-tertiary-contrast: var(--dracula-background);
+  --ion-color-tertiary-contrast-rgb: 40, 42, 54;
+  --ion-color-tertiary-shade: #7accdf;
+  --ion-color-tertiary-tint: #97ecfd;
+  
+  --ion-color-success: var(--dracula-green);
+  --ion-color-success-rgb: 80, 250, 123;
+  --ion-color-success-contrast: var(--dracula-background);
+  --ion-color-success-contrast-rgb: 40, 42, 54;
+  --ion-color-success-shade: #46dc6c;
+  --ion-color-success-tint: #65fb88;
+  
+  --ion-color-warning: var(--dracula-yellow);
+  --ion-color-warning-rgb: 241, 250, 140;
+  --ion-color-warning-contrast: var(--dracula-background);
+  --ion-color-warning-contrast-rgb: 40, 42, 54;
+  --ion-color-warning-shade: #d4dc7b;
+  --ion-color-warning-tint: #f3fb96;
+  
+  --ion-color-danger: var(--dracula-red);
+  --ion-color-danger-rgb: 255, 85, 85;
+  --ion-color-danger-contrast: var(--dracula-foreground);
+  --ion-color-danger-contrast-rgb: 248, 248, 242;
+  --ion-color-danger-shade: #e04b4b;
+  --ion-color-danger-tint: #ff6666;
+  
+  --ion-color-medium: var(--dracula-comment);
+  --ion-color-medium-rgb: 98, 114, 164;
+  --ion-color-medium-contrast: var(--dracula-foreground);
+  --ion-color-medium-contrast-rgb: 248, 248, 242;
+  --ion-color-medium-shade: #566490;
+  --ion-color-medium-tint: #7181ac;
+  
+  --ion-color-light: var(--dracula-foreground);
+  --ion-color-light-rgb: 248, 248, 242;
+  --ion-color-light-contrast: var(--dracula-background);
+  --ion-color-light-contrast-rgb: 40, 42, 54;
+  --ion-color-light-shade: #dadad5;
+  --ion-color-light-tint: #f9f9f4;
+  
+  /* Toolbar */
+  --ion-toolbar-background: var(--dracula-current-line);
+  --ion-toolbar-color: var(--dracula-foreground);
+  
+  /* Card */
+  --ion-card-background: var(--dracula-current-line);
+  
+  /* Item */
+  --ion-item-background: var(--dracula-background);
+  --ion-item-border-color: var(--dracula-current-line);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  background-color: var(--dracula-background);
+  color: var(--dracula-foreground);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.speech-text {
+  background: linear-gradient(135deg, var(--dracula-purple), var(--dracula-pink));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-align: center;
+  font-size: 1.5rem;
+  line-height: 1.6;
+  padding: 2rem;
+  font-weight: 500;
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.listening-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--dracula-green);
+  font-weight: 600;
+  margin: 1rem 0;
+}
+
+.listening-indicator::before {
+  content: '';
+  width: 12px;
+  height: 12px;
+  background: var(--dracula-green);
+  border-radius: 50%;
+  animation: pulse 1.5s infinite;
+}
