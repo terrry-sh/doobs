@@ -15,6 +15,7 @@ import {
   IonText,
   IonChip,
   IonLabel,
+  IonAlert,
   setupIonicReact
 } from '@ionic/react'
 import { micOutline, micOffOutline, refreshOutline } from 'ionicons/icons'
@@ -60,7 +61,10 @@ function App() {
   const [isListening, setIsListening] = useState<boolean>(false)
   const [interimTranscript, setInterimTranscript] = useState<string>('')
   const [isSupported, setIsSupported] = useState<boolean>(true)
+  const [errorMessage, setErrorMessage] = useState<string>('')
+  const [showPermissionAlert, setShowPermissionAlert] = useState<boolean>(false)
   const recognitionRef = useRef<any>(null)
+  const restartTimeoutRef = useRef<any>(null)
 
   useEffect(() => {
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
@@ -74,6 +78,12 @@ function App() {
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = 'en-US'
+    recognition.maxAlternatives = 1
+
+    recognition.onstart = () => {
+      console.log('Speech recognition started')
+      setErrorMessage('')
+    }
 
     recognition.onresult = (event: SpeechRecognitionEvent) => {
       let interimText = ''
@@ -98,15 +108,57 @@ function App() {
 
     recognition.onerror = (event: SpeechRecognitionErrorEvent) => {
       console.error('Speech recognition error:', event.error)
-      setIsListening(false)
       
-      if (event.error === 'no-speech') {
-        console.log('No speech detected. Try again.')
+      if (event.error === 'not-allowed') {
+        setErrorMessage('Microphone access denied. Please enable microphone permissions in your device settings.')
+        setShowPermissionAlert(true)
+        setIsListening(false)
+      } else if (event.error === 'no-speech') {
+        console.log('No speech detected, continuing...')
+        // On Safari iOS, we might need to restart after no-speech
+        if (isListening && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
+          restartTimeoutRef.current = setTimeout(() => {
+            if (recognitionRef.current && isListening) {
+              try {
+                recognitionRef.current.start()
+              } catch (e) {
+                console.log('Already started')
+              }
+            }
+          }, 100)
+        }
+      } else if (event.error === 'audio-capture') {
+        setErrorMessage('No microphone found. Please ensure a microphone is connected.')
+        setIsListening(false)
+      } else if (event.error === 'network') {
+        setErrorMessage('Network error. Please check your internet connection.')
+        setIsListening(false)
+      } else if (event.error === 'aborted') {
+        // This is usually fine, happens when we stop manually
+        console.log('Recognition aborted')
+      } else {
+        setErrorMessage(`Error: ${event.error}`)
+        setIsListening(false)
       }
     }
 
     recognition.onend = () => {
-      setIsListening(false)
+      console.log('Speech recognition ended')
+      // On Safari iOS, recognition might end unexpectedly, so restart if still listening
+      if (isListening && /iPad|iPhone|iPod/.test(navigator.userAgent)) {
+        restartTimeoutRef.current = setTimeout(() => {
+          if (recognitionRef.current && isListening) {
+            try {
+              recognitionRef.current.start()
+              console.log('Restarted recognition')
+            } catch (e) {
+              console.log('Could not restart:', e)
+            }
+          }
+        }, 100)
+      } else {
+        setIsListening(false)
+      }
     }
 
     recognitionRef.current = recognition
@@ -115,25 +167,49 @@ function App() {
       if (recognitionRef.current) {
         recognitionRef.current.stop()
       }
+      if (restartTimeoutRef.current) {
+        clearTimeout(restartTimeoutRef.current)
+      }
     }
-  }, [])
+  }, [isListening])
 
-  const toggleListening = () => {
+  const toggleListening = async () => {
     if (!recognitionRef.current) return
 
     if (isListening) {
+      if (restartTimeoutRef.current) {
+        clearTimeout(restartTimeoutRef.current)
+      }
       recognitionRef.current.stop()
       setIsListening(false)
       setInterimTranscript('')
     } else {
-      recognitionRef.current.start()
-      setIsListening(true)
+      try {
+        // For iOS Safari, we need to handle permissions differently
+        if (/iPad|iPhone|iPod/.test(navigator.userAgent) && !window.navigator.standalone) {
+          // Check if we're in Safari (not in standalone PWA mode)
+          setErrorMessage('')
+        }
+        
+        await recognitionRef.current.start()
+        setIsListening(true)
+        setErrorMessage('')
+      } catch (error: any) {
+        console.error('Error starting recognition:', error)
+        if (error.message && error.message.includes('already started')) {
+          // Recognition is already started, just update the state
+          setIsListening(true)
+        } else {
+          setErrorMessage('Failed to start recording. Please try again.')
+        }
+      }
     }
   }
 
   const clearTranscript = () => {
     setTranscript('')
     setInterimTranscript('')
+    setErrorMessage('')
   }
 
   return (
@@ -163,11 +239,19 @@ function App() {
                   <IonText color="danger">
                     <p style={{ textAlign: 'center' }}>
                       Speech recognition is not supported in this browser.
-                      Please use Chrome, Edge, or Safari.
+                      Please use Chrome, Edge, or Safari (iOS 14.5+).
                     </p>
                   </IonText>
                 ) : (
                   <>
+                    {errorMessage && (
+                      <IonText color="warning">
+                        <p style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                          {errorMessage}
+                        </p>
+                      </IonText>
+                    )}
+
                     {isListening && (
                       <div className="listening-indicator">
                         Listening...
@@ -228,8 +312,37 @@ function App() {
               )}
             </div>
 
+            {/iPad|iPhone|iPod/.test(navigator.userAgent) && (
+              <IonCard style={{ 
+                marginTop: '2rem', 
+                background: 'var(--dracula-current-line)',
+                borderLeft: '4px solid var(--dracula-yellow)'
+              }}>
+                <IonCardContent>
+                  <IonText color="medium">
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>
+                      <strong>iOS Safari Tips:</strong><br/>
+                      • Make sure you're using Safari (not Chrome on iOS)<br/>
+                      • Allow microphone permissions when prompted<br/>
+                      • Speak clearly and close to the device<br/>
+                      • If recognition stops, tap Stop then Start again
+                    </p>
+                  </IonText>
+                </IonCardContent>
+              </IonCard>
+            )}
+
           </div>
         </IonContent>
+
+        <IonAlert
+          isOpen={showPermissionAlert}
+          onDidDismiss={() => setShowPermissionAlert(false)}
+          header={'Microphone Permission Required'}
+          message={'To use speech recognition, please allow microphone access. On iOS: Settings > Safari > Microphone > Allow'}
+          buttons={['OK']}
+        />
+
       </IonPage>
     </IonApp>
   )
